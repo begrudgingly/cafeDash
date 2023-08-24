@@ -1,0 +1,92 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Cafe Dashboard - Expenses</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'main/styling.css' %}" type="text/css">
+  </head>
+
+  <body>
+    <div class="topnav">
+      <div class="linkbox" style="display: inline-flex;"><h3>Cafe Dashboard</h3>
+      <a class="mainlink" href="http://127.0.0.1:8000/branchSalesMenu/">Branches Sales</a>
+      <a class="mainlink" href="http://127.0.0.1:8000/itemSalesMenu/">Menu Item Sales</a>
+      <a class="mainlink" href="http://127.0.0.1:8000/expensesItem/">Expenses</a>
+      </div>
+    </div>
+
+    <div class="bigcont" style="margin-top: 150px;">
+    <div class="container" style="width: 50%; margin: 0 40 0 0;">
+      <h2>Overview of Expenses</h2><br><br>
+      <canvas id="exp-chart"></canvas>
+    </div>
+
+    <div class="container" style="height: auto; width: 30%; margin: 0 0 0 45;">
+      <b><h2>Expenses Breakdown</h2></b><br>
+
+      <table class="records" style="width: 100%;">
+        <tr>
+          <th style="background:rgba(0,0,0,0.1);">Expense Type</th>
+          <th>Total Expenses</th>
+        </tr>
+        {% for exp in calcExpenses %}
+        <tr>
+          <td>{{exp.expensesType}}</td>
+          <td>{{exp.totalExpType}}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    </div>
+
+    <div class="bigcont">
+    <div class="container" style="width: 100%;">
+      <b><h1>Expenses Record</h1></b><br>
+      <table class="records" style="width: 100%;">
+        <tr>
+          <th style="background:rgba(0,0,0,0.1);">Date Recorded</th>
+          <th>Expense Type</th>
+          <th style="background:rgba(0,0,0,0.1);">Total Expenses</th>
+          <th>Quantity</th>
+        </tr>
+        {% for record in object_list %}
+        <tr>
+          <td>{{record.dateRecorded|date}}</td>
+          <td>{{record.expensesType}}</td>
+          <td>{{record.totalExpenses}}</td>
+          <td>{{record.quantityExpenses}}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    </div>
+  </body>
+  
+</html>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+  <script>
+    Chart.defaults.global.elements.arc.borderWidth = 0;
+    Chart.defaults.global.defaultFontColor = '#fff';
+    var config = {
+      type: 'pie',
+      data: {
+        datasets: [{
+          data: {{ dataExpenses|safe }},
+          backgroundColor: ['#e8cb78', '#ae78e8', '#e878b2', '#b2e878'],
+          label: 'Expenses Breakdown'
+        }],
+        labels: {{ labelExpenses|safe }}
+      },
+      options: {
+        responsive: true
+      }
+    };
+
+    window.onload = function() {
+      var ctx = document.getElementById('exp-chart').getContext('2d');
+      window.expensesChart = new Chart(ctx, config);
+    };
+
+  </script>

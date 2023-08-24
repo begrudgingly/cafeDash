@@ -1,0 +1,19 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Cafe Dashboard</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'main/styling.css' %}" type="text/css">
+  </head>
+  <body>
+    <div class="container">
+      This is a homepage. Put all your things here.
+      <br>
+      {% for menu_item in menus %}
+        <li>{{ menu_item }}</li>
+      {% endfor %}
+    </div>
+
+  </body>
+</html>

@@ -1,0 +1,247 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Cafe Dashboard - Branches Sales</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'main/styling.css' %}" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.js"></script> 
+    <script src="http://code.jquery.com/jquery-1.11.3.js"></script>
+    <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+
+    <script type="text/javascript">
+      $(document).ready(function() {
+      $('#tabs').tabs(); // first tab selected
+      $("#tabs>div a[href^='#']").click(function() {
+        var index = $($(this).attr("href")).index() - 1
+        $("#tabs").tabs("option", "active", index);
+        return false
+      })
+    })
+  </script>
+  </head>
+  <body>
+    <div class="topnav">
+      <div class="linkbox" style="display: inline-flex;"><h3>Cafe Dashboard</h3>
+      <a class="mainlink" href="http://127.0.0.1:8000/branchSalesMenu/">Branches Sales</a>
+      <a class="mainlink" href="http://127.0.0.1:8000/itemSalesMenu/">Menu Item Sales</a>
+      <a class="mainlink" href="http://127.0.0.1:8000/expensesItem/">Expenses</a>
+      </div>
+    </div>
+
+    <div class="bigcont" style="margin-top: 150px;">
+    <div class="container" style="margin: 0 25 0 0;">
+      <h2>Total Monthly Sales: Selangor</h2><br>
+      {% for tot in agg_MonthlySelangor %}
+        <h4>RM{{ tot.totalSelangor }}</h4>
+      {% endfor %}
+    </div>
+    <div class="container" style="margin: 0 25 0 25;">
+      <h2>Total Monthly Sales: Johor</h2><br>
+      {% for tot in agg_MonthlyJohor %}
+        <h4>RM{{ tot.totalJohor }}</h4>
+      {% endfor %}
+    </div>
+    <div class="container" style="margin: 0 0 0 25;">
+      <h2>Total Monthly Sales: Perak</h2><br>
+      {% for tot in agg_MonthlyPerak %}
+        <h4>RM{{ tot.totalPerak }}</h4>
+      {% endfor %}
+    </div>
+    </div>
+
+    <div class="bigcont">
+    <div class="container" style="width: 50%; margin: 0 25 0 0;">
+      <h2>Monthly Sales by Branch</h2><br><br>
+      <canvas id="monthlySales-chart"></canvas>
+    </div>
+
+    <div class="container" style="width: 50%; margin: 0 0 0 25;">
+    <div id="tabs">
+      <div style="display: flex;">
+      <h2 style="margin: 0 20 0 0;">Filter Daily Sales by</h2>
+      <div class="dropdown">
+          <button class="dropbtn">Branches <i class="fa fa-caret-down"></i>
+          </button>
+          <div class="dropdown-content">
+            <ul>
+            <li><a href="#tabs-1">Selangor</a></li>
+            <li><a href="#tabs-2">Johor</a></li>
+            <li><a href="#tabs-3">Perak</a></li>
+            </ul>
+          </div>
+      </div>
+      </div>
+
+      <div id="tabs-1"><br><br>
+        <canvas id="dailySales-selangor"></canvas>
+      </div>
+      <div id="tabs-2"><br><br>
+        <canvas id="dailySales-johor"></canvas>
+      </div>
+      <div id="tabs-3"><br><br>
+        <canvas id="dailySales-perak"></canvas>
+      </div>
+    </div>
+    </div>
+    </div>
+
+    <div class="bigcont">
+    <div class="container" style="width: 100%;">
+      <h1>Daily Sales Record</h1><br>
+      <table class="records" style="width: 100%;">
+        <tr>
+          <th style="background:rgba(0,0,0,0.1);">Date of Sale</th>
+          <th>Total Sales</th>
+          <th style="background:rgba(0,0,0,0.1);">Branch</th>
+        </tr>
+        {% for record in object_list %}
+        <tr>
+          <td>{{record.dateOfSales|date}}</td>
+          <td>RM{{record.totalSales}}</td>
+          <td>{{record.branchOfOrigin}}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    </div>
+
+  </body>
+</html>
+
+  <script>
+    Chart.defaults.global.defaultFontColor = '#fff';
+    
+    $(function () {
+            var ctx = document.getElementById("monthlySales-chart").getContext('2d');
+            var data = {
+                datasets: [{
+                    data: {{ data|safe }},
+                    backgroundColor: ['#e8cb78', '#ae78e8', '#e878b2', '#b2e878', '#000000', '#363636',],
+                    label: 'Total Monthly Sales(RM)'
+                }],
+                labels: {{ labels|safe }}
+            };
+            var totalMonthlyBranches = new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: {
+                  responsive: true,
+                  scales: {
+                                yAxes: [{
+                                    display: true,
+                                    ticks: {
+                                        suggestedMin: 0, //min
+                                        suggestedMax: 100 //max 
+                                    }
+                                }]
+                            }
+                }
+            });
+
+            var dateSelangor = [];
+            {% for d in labelSelangor %}
+              var k = new Date("{{d.isoformat}}");
+              k = k.toISOString().substring(0,10);
+              dateSelangor.push(k);
+            {% endfor %}
+
+            var ctx_2 = document.getElementById("dailySales-selangor").getContext('2d');
+            var data_2 = {
+                datasets: [{
+                    data: {{ dataSelangor|safe }},
+                    lineTension: 0,
+                    backgroundColor: '#ae78e8',
+                    label: 'Daily Sales in Selangor(RM)'
+                }],
+                labels: dateSelangor
+            };
+            var selangorChart = new Chart(ctx_2, {
+                type: 'line',
+                data: data_2,
+                options: {
+                  responsive: true,
+                  scales: {
+                                yAxes: [{
+                                    display: true,
+                                    ticks: {
+                                        suggestedMin: 0, //min
+                                        suggestedMax: 100 //max 
+                                    }
+                                }]
+                            }
+                }
+            });
+
+            var dateJohor = [];
+            {% for d in labelJohor %}
+              var k = new Date("{{d.isoformat}}");
+              k = k.toISOString().substring(0,10);
+              dateJohor.push(k);
+            {% endfor %}
+
+            var ctx_3 = document.getElementById("dailySales-johor").getContext('2d');
+            var data_3 = {
+                datasets: [{
+                    data: {{ dataJohor|safe }},
+                    lineTension: 0,
+                    backgroundColor: '#ae78e8',
+                    label: 'Daily Sales in Johor(RM)'
+                }],
+                labels: dateJohor
+            };
+            var johorChart = new Chart(ctx_3, {
+                type: 'line',
+                data: data_3,
+                options: {
+                  responsive: true,
+                  scales: {
+                                yAxes: [{
+                                    display: true,
+                                    ticks: {
+                                        suggestedMin: 0, //min
+                                        suggestedMax: 100 //max 
+                                    }
+                                }]
+                            }
+                }
+            });
+
+            var datePerak = [];
+            {% for d in labelPerak %}
+              var k = new Date("{{d.isoformat}}");
+              k = k.toISOString().substring(0,10);
+              datePerak.push(k);
+            {% endfor %}
+
+            var ctx_4 = document.getElementById("dailySales-perak").getContext('2d');
+            var data_4 = {
+                datasets: [{
+                    data: {{ dataPerak|safe }},
+                    lineTension: 0,
+                    backgroundColor: '#ae78e8',
+                    label: 'Daily Sales in Perak(RM)'
+                }],
+                labels: datePerak
+            };
+            var perakChart = new Chart(ctx_4, {
+                type: 'line',
+                data: data_4,
+                options: {
+                  responsive: true,
+                  scales: {
+                                yAxes: [{
+                                    display: true,
+                                    ticks: {
+                                        suggestedMin: 0, //min
+                                        suggestedMax: 100 //max 
+                                    }
+                                }]
+                            }
+                }
+            });
+        });
+    
+  </script>

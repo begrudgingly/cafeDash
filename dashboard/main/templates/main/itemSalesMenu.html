@@ -1,0 +1,103 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Cafe Dashboard - Menu Item Sales</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'main/styling.css' %}" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+  </head>
+  <body>
+    <div class="topnav">
+      <div class="linkbox" style="display: inline-flex;"><h3>Cafe Dashboard</h3>
+      <a class="mainlink" href="http://127.0.0.1:8000/branchSalesMenu/">Branches Sales</a>
+      <a class="mainlink" href="http://127.0.0.1:8000/itemSalesMenu/">Menu Item Sales</a>
+      <a class="mainlink" href="http://127.0.0.1:8000/expensesItem/">Expenses</a>
+      </div>
+    </div>
+    
+    <div class="bigcont" style="margin-top: 125px;">
+    <div class="container" style="height: auto; width: 50%;">
+      <h2>Overview of Menu Items Sold</h2><br><br>
+      <canvas id="menuItem-chart"></canvas>
+    </div>
+
+    <div class="container" style="height: auto; width: 30%;">
+      <h2>Most Popular Menu Item</h2><br>
+      {% for item in mostPopular %}
+        <h4>{{ item.menuItem }}</h4><br>
+        <h2>Total Sales for Menu Item</h2><br>
+        <h4>{{ item.totalSold }}</h4>
+      {% endfor %}
+    </div>
+    </div>
+
+    <div class="bigcont">
+    <div class="container">
+      <b><h1>Highest Ordered Menu Item</h1></b><br>
+      <table class="breakdowns" style="width: 100%;">
+        <tr>
+          <th style="text-align: center;">Menu Item</th>
+          <th style="text-align: center;">Qty. Sold</th>
+        </tr>
+        {% for rec in agg_MenuItem %}
+        <tr>
+          <td style="text-align: center;">{{rec.menuItem}}</td>
+          <td style="text-align: center;">{{rec.totalSold}}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <div class="container">
+      <h1>Menu Item Sales Record</h1><br>
+      <table class="records" style="width: 100%;">
+        <tr>
+          <th style="background:rgba(0,0,0,0.1);">Date of Sale</th>
+          <th>Menu Item</th>
+          <th style="background:rgba(0,0,0,0.1);">Qty. Sold</th>
+        </tr>
+        {% for record in object_list %}
+        <tr>
+          <td>{{record.dateOfSales|date}}</td>
+          <td>{{record.menuItem}}</td>
+          <td>{{record.quantitySold}}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    </div>
+  </body>
+</html>
+
+  <script>
+    Chart.defaults.global.defaultFontColor = '#fff';
+    var config = {
+      type: 'bar',
+      data: {
+        datasets: [{
+          data: {{ dataTotalSales|safe }},
+          backgroundColor: ['#e8cb78', '#ae78e8', '#e878b2', '#b2e878', '#78dde8', '#363636',],
+          label: 'Number of Orders'
+        }],
+        labels: {{ labelTotalSales|safe }}
+      },
+      options: {
+        responsive: true,
+        scales: {
+                                yAxes: [{
+                                    display: true,
+                                    ticks: {
+                                        suggestedMin: 0, //min
+                                    }
+                                }]
+                            }
+      }
+    };
+
+    window.onload = function() {
+      var ctx = document.getElementById('menuItem-chart').getContext('2d');
+      window.menuItemChart = new Chart(ctx, config);
+    };
+
+  </script>
